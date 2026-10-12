@@ -1,0 +1,154 @@
+{
+  "name": "AI Presentation Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Presentation Outline Generator",
+        "formDescription": "Submit your User ID/email address, and presentation topic. Our AI will create 10 clear, presentation-ready key points based on your topic and send them to your User ID to help you prepare for your meeting.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email-ID: ",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Presentation Topic:",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #525356;\n\t--color-label: #555555;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #ff6d5a;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #ff6d5a;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}\n"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "cced6ebc-6bc9-4d1b-8112-607bfacb2f78",
+      "name": "On form submission",
+      "webhookId": "909a17cb-8454-4b4a-b243-e6ac13aae8a8"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        192
+      ],
+      "id": "1d8a0226-d92e-471a-bc61-b3f237f1e461",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['Email-ID: '] }}",
+        "subject": "=AI Presentation: {{ $('On form submission').item.json['Presentation Topic:'] }}",
+        "message": "={{ $('Points Generator').item.json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "014f6285-94e3-452b-8156-ff8b8b0040ce",
+      "name": "Send a message",
+      "webhookId": "98342fe4-530f-446b-a60c-c9cf486cf8dc",
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a presentation outline for the following topic:\n\nTopic:\n{{ $json['Presentation Topic:'] }}\n\nCreate exactly 10 clear, presentation-ready key points that will help someone confidently present this topic in a meeting. Ensure the points are logically ordered, easy to understand, and focused on the most important aspects of the topic.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert Presentation Content Generator.\n\nInstructions:\n\nAnalyze the topic carefully before generating the content.\nProduce exactly 10 numbered points.\nEach point should be concise (1–3 sentences).\nUse simple, professional English suitable for business meetings, classrooms, and conferences.\nArrange the points in a logical flow, starting with an introduction and ending with a conclusion or future outlook where appropriate.\nEnsure the information is accurate, relevant, and free of repetition.\nIf the topic is broad, cover different important aspects.\nIf the topic is technical, explain concepts in an easy-to-understand way.\nDo not include greetings, introductions, disclaimers, or explanations outside the requested points.\nReturn only the 10 numbered points.\n\nYou are an expert AI content generator.\n\nYour primary responsibility is to generate accurate, clear, well-structured, and professional content based on the user's request.\n\nFormatting Rules (Always Follow):\n\n1. Return the output as an HTML fragment only.\n2. Do NOT generate a complete HTML document.\n3. Never include the following tags:\n\n   * `<html>`\n   * `<head>`\n   * `<body>`\n   * `<style>`\n   * `<script>`\n4. Use only semantic HTML elements appropriate for the requested content.\n\nExamples:\n\n* Numbered lists → `<ol>` and `<li>`\n* Bullet lists → `<ul>` and `<li>`\n* Paragraphs → `<p>`\n* Headings → `<h1>`, `<h2>`, or `<h3>` when appropriate\n* Important terms → `<strong>`\n* Emphasis → `<em>`\n* Quotes → `<blockquote>`\n* Tables → `<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, and `<td>` only when explicitly requested.\n\n5. Choose the most suitable HTML structure automatically based on the user's request.\n6. Use clean, valid, and well-indented HTML.\n7. Do not use Markdown.\n8. Do not wrap the response inside code blocks.\n9. Do not include explanations, greetings, notes, or disclaimers unless explicitly requested.\n10. Return only the HTML fragment.\n\nContent Rules:\n\n* Write in professional, natural, and easy-to-understand English.\n* Ensure factual accuracy whenever possible.\n* Organize the information logically.\n* Avoid repetition.\n* Expand or shorten the response according to the user's request while maintaining clarity.\n* Generate content that is ready to be rendered directly inside an HTML email or web page without requiring additional formatting.\n\nOutput Format:\n\nTopic name in heading\n\nFirst key point\nSecond key point\nThird key point\nFourth key point\nFifth key point\nSixth key point\nSeventh key point\nEighth key point\nNinth key point\nTenth key point"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "c6fe16ba-8017-4eed-b2d6-bd4b4e2c921e",
+      "name": "Points Generator"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Points Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Points Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Points Generator": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
